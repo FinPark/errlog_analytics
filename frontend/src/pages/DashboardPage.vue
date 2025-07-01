@@ -9,6 +9,10 @@
           </div>
         </div>
         <div class="q-gutter-sm">
+          <ExportMenu 
+            :data="exportData" 
+            v-if="hasData"
+          />
           <q-btn 
             outline 
             color="primary" 
@@ -158,7 +162,9 @@
               <q-item
                 v-for="error in criticalErrors"
                 :key="error.id"
-                class="q-mb-sm"
+                class="q-mb-sm cursor-pointer"
+                clickable
+                @click="showErrorDetail(error)"
               >
                 <q-item-section avatar>
                   <q-icon name="warning" color="negative" />
@@ -192,8 +198,11 @@
           row-key="id"
           :pagination="{ rowsPerPage: 10 }"
           :filter="filter"
+          :filter-method="customFilter"
           binary-state-sort
           :loading="loading"
+          @row-click="(evt, row) => showErrorDetail(row)"
+          class="cursor-pointer"
         >
           <template v-slot:top-right>
             <q-input
@@ -223,6 +232,12 @@
       </q-card-section>
     </q-card>
     </div>
+
+    <!-- Error Detail Modal -->
+    <ErrorDetailModal 
+      v-model="showErrorModal" 
+      :error="selectedError" 
+    />
   </q-page>
 </template>
 
@@ -230,6 +245,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { Chart, registerables } from 'chart.js'
 import { useQuasar } from 'quasar'
+import ErrorDetailModal from '@/components/ErrorDetailModal.vue'
+import ExportMenu from '@/components/ExportMenu.vue'
 import { 
   getErrorSummary, 
   getErrors, 
@@ -267,6 +284,17 @@ const summaryStats = ref({
 })
 
 const criticalErrors = ref<any[]>([])
+
+// Error detail modal
+const showErrorModal = ref(false)
+const selectedError = ref<any>(null)
+
+// Export data computed
+const exportData = computed(() => ({
+  errors: errorTableData.value,
+  summary: summaryStats.value,
+  filters: { searchFilter: filter.value }
+}))
 const hasData = computed(() => dashboardData.value !== null && summaryStats.value.totalErrors > 0)
 
 const errorTableColumns = [
@@ -318,6 +346,30 @@ function getSeverityColor(severity: string): string {
     case 'low': return 'positive'
     default: return 'grey'
   }
+}
+
+// Error detail functions
+function showErrorDetail(error: any) {
+  selectedError.value = error
+  showErrorModal.value = true
+}
+
+// Custom filter method for the table
+function customFilter(rows: any[], terms: string) {
+  if (!terms) return rows
+  
+  const lowerTerms = terms.toLowerCase()
+  return rows.filter(row => {
+    // Search in all relevant fields
+    return (
+      row.type?.toLowerCase().includes(lowerTerms) ||
+      row.user?.toLowerCase().includes(lowerTerms) ||
+      row.timestamp?.toLowerCase().includes(lowerTerms) ||
+      row.severity?.toLowerCase().includes(lowerTerms) ||
+      row.filename?.toLowerCase().includes(lowerTerms) ||
+      row.code?.toString().includes(lowerTerms)
+    )
+  })
 }
 
 function initializeCharts() {
@@ -422,12 +474,22 @@ function initializeCharts() {
 
 // Filter table by error type (pie chart interaction)
 function filterByErrorType(errorType: string) {
-  filter.value = errorType
-  $q.notify({
-    type: 'info',
-    message: `Filtering by: ${errorType}`,
-    timeout: 2000
-  })
+  // Toggle filter if clicking the same type
+  if (filter.value === errorType) {
+    filter.value = ''
+    $q.notify({
+      type: 'info',
+      message: 'Filter cleared',
+      timeout: 2000
+    })
+  } else {
+    filter.value = errorType
+    $q.notify({
+      type: 'info',
+      message: `Filtering by: ${errorType}`,
+      timeout: 2000
+    })
+  }
 }
 
 // Load dashboard data from API

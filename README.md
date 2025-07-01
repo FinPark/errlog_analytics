@@ -83,6 +83,7 @@ docker-compose --version  # Compose 2.0+
 
 # Windows: PowerShell oder Command Prompt verwenden
 # macOS/Linux: Terminal verwenden
+# Hinweis: Port 8080 statt 8000 für Windows-Kompatibilität
 ```
 
 #### **Entwicklung-Setup (Optional)**
@@ -109,8 +110,8 @@ docker-compose up -d
 
 # 3. Anwendung öffnen (alle Betriebssysteme)
 # Frontend: http://localhost:3001
-# Backend:  http://localhost:8000
-# API-Docs: http://localhost:8000/docs
+# Backend:  http://localhost:8080
+# API-Docs: http://localhost:8080/docs
 ```
 
 ### **🪟 Windows-spezifische Hinweise**
@@ -383,7 +384,7 @@ NODE_ENV=development npm run dev
 netstat -tulpn | grep -E ':(3001|8000|6379)'
 
 # Ports prüfen (Windows):
-netstat -an | findstr "3001 8000 6379"
+netstat -an | findstr "3001 8080 6379"
 
 # Container-Logs anzeigen (alle Systeme):
 docker-compose logs backend
@@ -403,7 +404,7 @@ docker-compose logs frontend
 
 # Firewall/Antivirus:
 # - Docker Desktop in Firewall-Ausnahmen hinzufügen
-# - Ports 3001, 8000, 6379 freigeben
+# - Ports 3001, 8080, 6379 freigeben
 ```
 
 **Upload funktioniert nicht:**

@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: errlog_backend
     ports:
-      - "8000:8000"
+      - "8080:8000"
     volumes:
       - ./backend:/app
       - ./sample_logs:/app/sample_logs
