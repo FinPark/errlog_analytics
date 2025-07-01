@@ -354,15 +354,51 @@ async function uploadFiles() {
       timeout: 4000
     })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Upload failed:', error)
     isUploading.value = false
     uploadComplete.value = false
     
+    // Extract detailed error information
+    let errorMessage = 'Analysis failed'
+    let errorDetails = ''
+    
+    if (error.response) {
+      // Server responded with error
+      errorMessage = `Server Error: ${error.response.status}`
+      if (error.response.data) {
+        if (typeof error.response.data === 'string') {
+          errorDetails = error.response.data
+        } else if (error.response.data.detail) {
+          errorDetails = error.response.data.detail
+        } else if (error.response.data.message) {
+          errorDetails = error.response.data.message
+        } else {
+          errorDetails = JSON.stringify(error.response.data)
+        }
+      }
+    } else if (error.request) {
+      // Request made but no response
+      errorMessage = 'Connection Error'
+      errorDetails = 'Could not connect to backend. Please check if Docker containers are running.'
+    } else {
+      // Other errors
+      errorMessage = 'Upload Error'
+      errorDetails = error.message || 'Unknown error occurred'
+    }
+    
     $q.notify({
       type: 'negative',
-      message: 'Analysis failed. Please check your files and try again.',
-      timeout: 5000
+      message: errorMessage,
+      caption: errorDetails,
+      timeout: 10000,
+      actions: [
+        { 
+          label: 'Dismiss', 
+          color: 'white',
+          handler: () => { /* ... */ }
+        }
+      ]
     })
   }
 }

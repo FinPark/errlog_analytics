@@ -31,7 +31,18 @@ api.interceptors.response.use(
     return response
   },
   (error) => {
-    console.error('API Error:', error.response?.data || error.message)
+    console.error('API Error Details:')
+    console.error('- Message:', error.message)
+    console.error('- Code:', error.code)
+    console.error('- Status:', error.response?.status)
+    console.error('- Data:', error.response?.data)
+    console.error('- URL:', error.config?.url)
+    console.error('- Method:', error.config?.method)
+    
+    if (error.code === 'ERR_NETWORK') {
+      console.error('Network Error - Backend might not be running or accessible')
+    }
+    
     return Promise.reject(error)
   }
 )
