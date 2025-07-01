@@ -99,27 +99,18 @@
         </div>
     </div>
 
+    <!-- Timeline Analysis -->
+    <div class="q-mb-md">
+      <TimelineAnalysis 
+        :errors="errorTableData"
+        @update:filtered-data="handleTimelineFilter"
+      />
+    </div>
+
     <!-- Charts Row -->
     <div class="row q-gutter-md q-mb-md">
-      <!-- Error Timeline Chart -->
-      <div class="col-12 col-lg-8">
-        <q-card>
-          <q-card-section>
-            <div class="text-h6">Error Timeline</div>
-            <div class="text-caption text-grey-7">
-              Errors over time with dual timeline (filename vs internal timestamps)
-            </div>
-          </q-card-section>
-          <q-card-section>
-            <div class="chart-container" style="height: 300px;">
-              <canvas ref="timelineChart"></canvas>
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
-      
       <!-- Error Types Distribution -->
-      <div class="col-12 col-lg-4">
+      <div class="col-12 col-lg-6">
         <q-card>
           <q-card-section>
             <div class="text-h6">Error Types</div>
@@ -255,6 +246,7 @@ import { useQuasar } from 'quasar'
 import ErrorDetailModal from '@/components/ErrorDetailModal.vue'
 import ExportMenu from '@/components/ExportMenu.vue'
 import AdvancedFilters from '@/components/AdvancedFilters.vue'
+import TimelineAnalysis from '@/components/TimelineAnalysis.vue'
 import { 
   getErrorSummary, 
   getErrors, 
@@ -270,12 +262,10 @@ Chart.register(...registerables)
 const $q = useQuasar()
 
 // Chart refs
-const timelineChart = ref<HTMLCanvasElement>()
 const errorTypesChart = ref<HTMLCanvasElement>()
 const userActivityChart = ref<HTMLCanvasElement>()
 
 // Chart instances
-let timelineChartInstance: Chart | null = null
 let errorTypesChartInstance: Chart | null = null
 let userActivityChartInstance: Chart | null = null
 
@@ -319,6 +309,24 @@ const filteredTableData = ref<any[]>([])
 // Filter handler from AdvancedFilters component
 function handleFilterUpdate(filteredData: any[]) {
   filteredTableData.value = filteredData
+}
+
+// Timeline filter handler
+function handleTimelineFilter(filteredData: any[]) {
+  // Apply timeline filter to the table data
+  if (filteredTableData.value.length > 0) {
+    // If advanced filters are also active, combine both filters
+    const timelineFiltered = filteredData
+    const advancedFiltered = filteredTableData.value
+    
+    // Find intersection of both filtered datasets
+    filteredTableData.value = timelineFiltered.filter(timelineItem =>
+      advancedFiltered.some(advancedItem => advancedItem.id === timelineItem.id)
+    )
+  } else {
+    // Only timeline filter active
+    filteredTableData.value = filteredData
+  }
 }
 const hasData = computed(() => dashboardData.value !== null && summaryStats.value.totalErrors > 0)
 
@@ -401,45 +409,11 @@ function initializeCharts() {
   if (!dashboardData.value) return
 
   // Destroy existing charts
-  if (timelineChartInstance) {
-    timelineChartInstance.destroy()
-  }
   if (errorTypesChartInstance) {
     errorTypesChartInstance.destroy()
   }
   if (userActivityChartInstance) {
     userActivityChartInstance.destroy()
-  }
-
-  // Timeline Chart
-  if (timelineChart.value && dashboardData.value.timeline) {
-    timelineChartInstance = new Chart(timelineChart.value, {
-      type: 'line',
-      data: {
-        labels: dashboardData.value.timeline.labels,
-        datasets: [{
-          label: 'Errors',
-          data: dashboardData.value.timeline.data,
-          borderColor: '#1976d2',
-          backgroundColor: 'rgba(25, 118, 210, 0.1)',
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        }
-      }
-    })
   }
 
   // Error Types Chart (with click interaction)
