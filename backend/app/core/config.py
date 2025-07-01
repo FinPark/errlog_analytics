@@ -13,15 +13,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     # CORS Settings
-    ALLOWED_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3001",
-        "http://localhost:8080",
-        "http://127.0.0.1:8080",
-        "*"  # Allow all origins for development (remove in production)
-    ]
+    ALLOWED_ORIGINS: List[str] = ["*"]  # Allow all origins for development
     
     # File Upload Settings
     MAX_FILE_SIZE: int = 100 * 1024 * 1024  # 100MB
