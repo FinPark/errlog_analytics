@@ -49,6 +49,13 @@
 
     <!-- Dashboard Content -->
     <div v-else>
+      <!-- Advanced Filters -->
+      <AdvancedFilters 
+        v-model="advancedFilters"
+        :errors="errorTableData"
+        @filter="handleFilterUpdate"
+      />
+      
       <!-- Summary Cards -->
       <div class="row q-gutter-md q-mb-md">
         <div class="col-12 col-sm-6 col-md-3">
@@ -193,7 +200,7 @@
         <div class="text-h6 q-mb-md">Detailed Error Log</div>
         
         <q-table
-          :rows="errorTableData"
+          :rows="filteredTableData.length > 0 ? filteredTableData : errorTableData"
           :columns="errorTableColumns"
           row-key="id"
           :pagination="{ rowsPerPage: 10 }"
@@ -247,6 +254,7 @@ import { Chart, registerables } from 'chart.js'
 import { useQuasar } from 'quasar'
 import ErrorDetailModal from '@/components/ErrorDetailModal.vue'
 import ExportMenu from '@/components/ExportMenu.vue'
+import AdvancedFilters from '@/components/AdvancedFilters.vue'
 import { 
   getErrorSummary, 
   getErrors, 
@@ -291,10 +299,27 @@ const selectedError = ref<any>(null)
 
 // Export data computed
 const exportData = computed(() => ({
-  errors: errorTableData.value,
+  errors: filteredTableData.value,
   summary: summaryStats.value,
-  filters: { searchFilter: filter.value }
+  filters: advancedFilters.value
 }))
+
+// Advanced filters
+const advancedFilters = ref({
+  search: '',
+  users: [],
+  severities: [],
+  errorTypes: [],
+  dateFrom: '',
+  dateTo: ''
+})
+
+const filteredTableData = ref<any[]>([])
+
+// Filter handler from AdvancedFilters component
+function handleFilterUpdate(filteredData: any[]) {
+  filteredTableData.value = filteredData
+}
 const hasData = computed(() => dashboardData.value !== null && summaryStats.value.totalErrors > 0)
 
 const errorTableColumns = [
@@ -527,6 +552,7 @@ async function loadDashboardData() {
     }
     
     errorTableData.value = errorsData.errors || []
+    filteredTableData.value = errorsData.errors || []
     criticalErrors.value = criticalData.critical_errors || []
     
     dashboardData.value = {

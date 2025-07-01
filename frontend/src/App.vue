@@ -24,9 +24,13 @@
             flat
             round
             dense
-            icon="light_mode"
+            :icon="themeStore.isDark ? 'light_mode' : 'dark_mode'"
             @click="toggleDarkMode"
-          />
+          >
+            <q-tooltip>
+              {{ themeStore.isDark ? 'Light Mode' : 'Dark Mode' }}
+            </q-tooltip>
+          </q-btn>
         </q-toolbar>
       </q-header>
 
@@ -87,17 +91,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
+import { useThemeStore } from '@/stores/theme'
+import ThemeToggle from '@/components/ThemeToggle.vue'
 
 const $q = useQuasar()
 const leftDrawerOpen = ref(false)
+const themeStore = useThemeStore()
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
 
 function toggleDarkMode() {
-  $q.dark.toggle()
+  themeStore.toggleTheme()
 }
+
+onMounted(() => {
+  themeStore.initTheme()
+})
 </script>
