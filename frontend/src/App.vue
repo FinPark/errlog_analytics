@@ -39,7 +39,7 @@
         v-model="leftDrawerOpen"
         show-if-above
         bordered
-        class="bg-grey-1"
+        :class="themeStore.isDark ? 'bg-grey-9' : 'bg-grey-1'"
       >
         <q-list>
           <q-item-label header>Navigation</q-item-label>

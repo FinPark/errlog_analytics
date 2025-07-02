@@ -205,16 +205,18 @@ Das Dashboard bietet verschiedene Analysebereiche:
 - **Files Analyzed**: Verarbeitete Dateien
 
 #### **📈 Visualisierungen** (Interaktiv)
-- **Error Timeline**: Zeitbasierte Fehlerverteilung mit Dual-Achsen
+- **Timeline Analysis**: Erweiterte Zeitbasierte Analyse mit Trendlinie, Wachstumsraten und Filteroptionen
 - **Error Types**: Kreisdiagramm der Fehlercode-Verteilung (klickbar für Filterung)
 - **User Activity**: Balkendiagramm der Benutzer-Aktivitäten
-- **Critical Alerts**: Liste hochpriorisierter Fehler
+- **Critical Alerts**: Liste hochpriorisierter Fehler (klickbar für Details)
 
 #### **🔍 Detailansicht**
+- **Globale Filterung**: Alle Dashboard-Komponenten reagieren auf aktive Filter
 - **Sortierbare Tabelle** mit allen Fehlern (zeigt alle hochgeladenen Einträge)
-- **Suchfunktion** für spezifische Einträge
+- **Erweiterte Suchfunktion** für spezifische Einträge
 - **Interaktive Filterung** durch Klick auf Diagramm-Segmente
-- **Refresh-Funktion** für Datenaktualisierung
+- **Dark/Light Mode Toggle** mit vollständiger UI-Unterstützung
+- **Timeline-Filter** mit Quick-Range-Optionen (7/30/90 Tage)
 - **Export-Funktionen** (CSV, JSON, PDF)
 
 ### **3. 🎯 Log-Format-Spezifikationen**

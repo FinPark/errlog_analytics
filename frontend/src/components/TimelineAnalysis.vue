@@ -273,17 +273,52 @@ const trendInsights = computed(() => {
 })
 
 // Methods
+function calculateTrendLine(data: number[]): number[] {
+  if (data.length < 2) return data
+  
+  const n = data.length
+  let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0
+  
+  for (let i = 0; i < n; i++) {
+    sumX += i
+    sumY += data[i]
+    sumXY += i * data[i]
+    sumXX += i * i
+  }
+  
+  const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
+  const intercept = (sumY - slope * sumX) / n
+  
+  return data.map((_, i) => slope * i + intercept)
+}
+
 function parseErrorDate(timestamp: string): Date | null {
   try {
-    // Parse DD.MM.YYYY HH:MM:SS format
+    // Handle DD.MM.YYYY HH:MM:SS format
     const parts = timestamp.split(' ')
-    if (parts.length !== 2) return null
+    if (parts.length >= 1) {
+      const datePart = parts[0]
+      const dateParts = datePart.split('.')
+      
+      if (dateParts.length === 3) {
+        const [day, month, year] = dateParts
+        const parsedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+        
+        // Validate the parsed date
+        if (!isNaN(parsedDate.getTime())) {
+          return parsedDate
+        }
+      }
+    }
     
-    const [datePart] = parts
-    const [day, month, year] = datePart.split('.')
+    // Fallback: try native Date parsing
+    const fallbackDate = new Date(timestamp)
+    if (!isNaN(fallbackDate.getTime())) {
+      return fallbackDate
+    }
     
-    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
-  } catch {
+    return null
+  } catch (error) {
     return null
   }
 }
@@ -291,7 +326,7 @@ function parseErrorDate(timestamp: string): Date | null {
 function processTimelineData(errors: ErrorData[]): TimelineData {
   const groupedData: Record<string, number> = {}
   
-  errors.forEach(error => {
+  errors.forEach((error, index) => {
     const date = parseErrorDate(error.timestamp)
     if (!date) return
 
@@ -377,13 +412,31 @@ function updateTimelineView() {
 function updateChart() {
   if (!chartInstance || !timelineChart.value) return
 
+  const trendData = calculateTrendLine(processedTimelineData.value.data)
+  
   chartInstance.data.labels = processedTimelineData.value.labels
   chartInstance.data.datasets[0].data = processedTimelineData.value.data
+  chartInstance.data.datasets[1].data = trendData
   chartInstance.update('active')
 }
 
 function initChart() {
   if (!timelineChart.value) return
+
+  // Ensure we have data before initializing
+  if (processedTimelineData.value.labels.length === 0) {
+    return
+  }
+
+  // Destroy existing chart if it exists
+  if (chartInstance) {
+    chartInstance.destroy()
+    chartInstance = null
+  }
+
+  // Calculate trend line data
+  const data = processedTimelineData.value.data
+  const trendData = calculateTrendLine(data)
 
   chartInstance = new Chart(timelineChart.value, {
     type: 'line',
@@ -398,6 +451,16 @@ function initChart() {
         fill: true,
         pointRadius: 4,
         pointHoverRadius: 6
+      }, {
+        label: 'Trend',
+        data: trendData,
+        borderColor: '#ff5722',
+        backgroundColor: 'transparent',
+        borderDash: [5, 5],
+        tension: 0,
+        fill: false,
+        pointRadius: 0,
+        pointHoverRadius: 0
       }]
     },
     options: {
@@ -439,7 +502,7 @@ function initChart() {
 }
 
 // Watch for prop changes
-watch(() => props.errors, () => {
+watch(() => props.errors, (newErrors) => {
   filterTimeline()
 }, { immediate: true })
 

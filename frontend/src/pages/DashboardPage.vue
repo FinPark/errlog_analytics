@@ -62,7 +62,7 @@
           <q-card class="text-center">
             <q-card-section>
               <q-icon name="error" size="48px" color="negative" />
-              <div class="text-h4 q-mt-md">{{ summaryStats.totalErrors }}</div>
+              <div class="text-h4 q-mt-md">{{ filteredSummaryStats.totalErrors }}</div>
               <div class="text-subtitle2">Total Errors</div>
             </q-card-section>
           </q-card>
@@ -72,7 +72,7 @@
           <q-card class="text-center">
             <q-card-section>
               <q-icon name="warning" size="48px" color="orange" />
-              <div class="text-h4 q-mt-md">{{ summaryStats.criticalErrors }}</div>
+              <div class="text-h4 q-mt-md">{{ filteredSummaryStats.criticalErrors }}</div>
               <div class="text-subtitle2">Critical Errors</div>
             </q-card-section>
           </q-card>
@@ -82,7 +82,7 @@
           <q-card class="text-center">
             <q-card-section>
               <q-icon name="person" size="48px" color="info" />
-              <div class="text-h4 q-mt-md">{{ summaryStats.activeUsers }}</div>
+              <div class="text-h4 q-mt-md">{{ filteredSummaryStats.activeUsers }}</div>
               <div class="text-subtitle2">Active Users</div>
             </q-card-section>
           </q-card>
@@ -92,7 +92,7 @@
           <q-card class="text-center">
             <q-card-section>
               <q-icon name="description" size="48px" color="secondary" />
-              <div class="text-h4 q-mt-md">{{ summaryStats.filesAnalyzed }}</div>
+              <div class="text-h4 q-mt-md">{{ filteredSummaryStats.filesAnalyzed }}</div>
               <div class="text-subtitle2">Files Analyzed</div>
             </q-card-section>
           </q-card>
@@ -102,7 +102,7 @@
     <!-- Timeline Analysis -->
     <div class="q-mb-md">
       <TimelineAnalysis 
-        :errors="errorTableData"
+        :errors="masterFilteredData"
         @update:filtered-data="handleTimelineFilter"
       />
     </div>
@@ -158,7 +158,7 @@
           <q-card-section>
             <q-list>
               <q-item
-                v-for="error in criticalErrors"
+                v-for="error in filteredCriticalErrors"
                 :key="error.id"
                 class="q-mb-sm cursor-pointer"
                 clickable
@@ -191,7 +191,7 @@
         <div class="text-h6 q-mb-md">Detailed Error Log</div>
         
         <q-table
-          :rows="filteredTableData.length > 0 ? filteredTableData : errorTableData"
+          :rows="masterFilteredData"
           :columns="errorTableColumns"
           row-key="id"
           :pagination="{ rowsPerPage: 10 }"
@@ -240,7 +240,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import { Chart, registerables } from 'chart.js'
 import { useQuasar } from 'quasar'
 import ErrorDetailModal from '@/components/ErrorDetailModal.vue'
@@ -305,28 +305,105 @@ const advancedFilters = ref({
 })
 
 const filteredTableData = ref<any[]>([])
+const advancedFilterActive = ref(false)
+
+// Master filtered data that affects all components
+const masterFilteredData = computed(() => {
+  // Start with base data
+  let data = errorTableData.value
+  
+  // Apply advanced filters first if active
+  if (advancedFilterActive.value && filteredTableData.value.length > 0) {
+    data = filteredTableData.value
+  }
+  
+  // Apply search filter on top
+  if (filter.value) {
+    data = data.filter(error => 
+      error.type && error.type.toLowerCase().includes(filter.value.toLowerCase())
+    )
+  }
+  
+  return data
+})
+
+// Computed data for all components based on filtered data
+const filteredSummaryStats = computed(() => {
+  const data = masterFilteredData.value
+  const criticalErrors = data.filter(e => e.severity === 'Critical')
+  const uniqueUsers = [...new Set(data.map(e => e.user))]
+  
+  return {
+    totalErrors: data.length,
+    criticalErrors: criticalErrors.length,
+    activeUsers: uniqueUsers.length,
+    filesAnalyzed: summaryStats.value.filesAnalyzed // This stays the same
+  }
+})
+
+const filteredErrorTypes = computed(() => {
+  const data = masterFilteredData.value
+  const typeCounts: Record<string, number> = {}
+  
+  data.forEach(error => {
+    if (error.type) {
+      typeCounts[error.type] = (typeCounts[error.type] || 0) + 1
+    }
+  })
+  
+  const sorted = Object.entries(typeCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+  
+  return {
+    labels: sorted.map(([type]) => type),
+    data: sorted.map(([, count]) => count)
+  }
+})
+
+const filteredUserActivity = computed(() => {
+  const data = masterFilteredData.value
+  const userCounts: Record<string, number> = {}
+  
+  data.forEach(error => {
+    if (error.user) {
+      userCounts[error.user] = (userCounts[error.user] || 0) + 1
+    }
+  })
+  
+  const sorted = Object.entries(userCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+  
+  return {
+    labels: sorted.map(([user]) => user),
+    data: sorted.map(([, count]) => count)
+  }
+})
+
+const filteredCriticalErrors = computed(() => {
+  return masterFilteredData.value
+    .filter(e => e.severity === 'Critical')
+    .slice(0, 10)
+})
 
 // Filter handler from AdvancedFilters component
 function handleFilterUpdate(filteredData: any[]) {
+  advancedFilterActive.value = filteredData.length > 0 && filteredData.length < errorTableData.value.length
   filteredTableData.value = filteredData
 }
 
 // Timeline filter handler
 function handleTimelineFilter(filteredData: any[]) {
-  // Apply timeline filter to the table data
-  if (filteredTableData.value.length > 0) {
-    // If advanced filters are also active, combine both filters
-    const timelineFiltered = filteredData
-    const advancedFiltered = filteredTableData.value
-    
-    // Find intersection of both filtered datasets
-    filteredTableData.value = timelineFiltered.filter(timelineItem =>
-      advancedFiltered.some(advancedItem => advancedItem.id === timelineItem.id)
-    )
-  } else {
-    // Only timeline filter active
-    filteredTableData.value = filteredData
-  }
+  // Don't update filteredTableData here to avoid conflicts
+  // Timeline filtering should work independently
+}
+
+// Update all charts when filters change
+function updateAllCharts() {
+  nextTick(() => {
+    updateChartData()
+  })
 }
 const hasData = computed(() => dashboardData.value !== null && summaryStats.value.totalErrors > 0)
 
@@ -405,6 +482,22 @@ function customFilter(rows: any[], terms: string) {
   })
 }
 
+function updateChartData() {
+  // Update Error Types Chart
+  if (errorTypesChartInstance) {
+    errorTypesChartInstance.data.labels = filteredErrorTypes.value.labels
+    errorTypesChartInstance.data.datasets[0].data = filteredErrorTypes.value.data
+    errorTypesChartInstance.update()
+  }
+  
+  // Update User Activity Chart
+  if (userActivityChartInstance) {
+    userActivityChartInstance.data.labels = filteredUserActivity.value.labels
+    userActivityChartInstance.data.datasets[0].data = filteredUserActivity.value.data
+    userActivityChartInstance.update()
+  }
+}
+
 function initializeCharts() {
   if (!dashboardData.value) return
 
@@ -417,13 +510,13 @@ function initializeCharts() {
   }
 
   // Error Types Chart (with click interaction)
-  if (errorTypesChart.value && dashboardData.value.errorTypes) {
+  if (errorTypesChart.value && filteredErrorTypes.value) {
     errorTypesChartInstance = new Chart(errorTypesChart.value, {
       type: 'doughnut',
       data: {
-        labels: dashboardData.value.errorTypes.labels,
+        labels: filteredErrorTypes.value.labels,
         datasets: [{
-          data: dashboardData.value.errorTypes.data,
+          data: filteredErrorTypes.value.data,
           backgroundColor: ['#f2c037', '#26a69a', '#c10015', '#9c27b0', '#ff5722']
         }]
       },
@@ -438,7 +531,7 @@ function initializeCharts() {
         onClick: (event, elements) => {
           if (elements.length > 0) {
             const index = elements[0].index
-            const errorType = dashboardData.value.errorTypes.labels[index]
+            const errorType = filteredErrorTypes.value.labels[index]
             filterByErrorType(errorType)
           }
         }
@@ -447,14 +540,14 @@ function initializeCharts() {
   }
 
   // User Activity Chart
-  if (userActivityChart.value && dashboardData.value.userActivity) {
+  if (userActivityChart.value && filteredUserActivity.value) {
     userActivityChartInstance = new Chart(userActivityChart.value, {
       type: 'bar',
       data: {
-        labels: dashboardData.value.userActivity.labels,
+        labels: filteredUserActivity.value.labels,
         datasets: [{
           label: 'Error Count',
-          data: dashboardData.value.userActivity.data,
+          data: filteredUserActivity.value.data,
           backgroundColor: '#26a69a'
         }]
       },
@@ -476,7 +569,6 @@ function filterByErrorType(errorType: string) {
   // Toggle filter if clicking the same type
   if (filter.value === errorType) {
     filter.value = ''
-    filteredTableData.value = errorTableData.value // Reset to all data
     $q.notify({
       type: 'info',
       message: 'Filter cleared',
@@ -484,13 +576,9 @@ function filterByErrorType(errorType: string) {
     })
   } else {
     filter.value = errorType
-    // Filter the data by error type
-    filteredTableData.value = errorTableData.value.filter(error => 
-      error.type && error.type.toLowerCase().includes(errorType.toLowerCase())
-    )
     $q.notify({
       type: 'info',
-      message: `Filtering by: ${errorType} (${filteredTableData.value.length} results)`,
+      message: `Filtering by: ${errorType}`,
       timeout: 2000
     })
   }
@@ -531,7 +619,8 @@ async function loadDashboardData() {
     }
     
     errorTableData.value = errorsData.errors || []
-    filteredTableData.value = errorsData.errors || []
+    filteredTableData.value = [] // Clear filtered data on fresh load
+    advancedFilterActive.value = false
     criticalErrors.value = criticalData.critical_errors || []
     
     dashboardData.value = {
