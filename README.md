@@ -117,6 +117,21 @@ docker-compose up -d
 # API-Docs: http://localhost:8080/docs
 ```
 
+### **🔄 Updates (für bestehende Installationen)**
+
+```bash
+# 1. Neueste Änderungen abrufen
+git pull
+
+# 2. Container mit neuen Dependencies neu builden
+docker-compose build --no-cache
+
+# 3. Container neu starten
+docker-compose up -d
+
+# Hinweis: --no-cache ist wichtig bei neuen Dependencies (ML-Features)
+```
+
 ### **🪟 Windows-spezifische Hinweise**
 
 ```powershell
@@ -415,6 +430,17 @@ netstat -an | findstr "3001 8080 6379"
 # Container-Logs anzeigen (alle Systeme):
 docker-compose logs backend
 docker-compose logs frontend
+```
+
+**Backend ImportError (sklearn/ML-Dependencies):**
+```bash
+# Nach git pull mit neuen Dependencies:
+docker-compose down
+docker-compose build --no-cache backend
+docker-compose up -d
+
+# Oder vollständiger Rebuild:
+docker-compose build --no-cache
 ```
 
 **Windows-spezifische Probleme:**
