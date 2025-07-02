@@ -1,8 +1,8 @@
-# 🔍 Error Log Analytics
+# 🔍 Finkens Error-Log Analytics
 
-> **Erweiterte Analyse von AMS-Fehlerlogs mit intelligenter Mustererkennung**
+> **KI-gestützte Analyse von AMS-Fehlerlogs mit Machine Learning und intelligenter Mustererkennung**
 
-Eine moderne Webanwendung zur automatisierten Analyse von Visual Objects (E_*.LOG) und .NET (EC_*.LOG) Fehlerprotokollen mit fortschrittlichen Visualisierungen und Erkennungsalgorithmen.
+Eine moderne Webanwendung zur automatisierten Analyse von Visual Objects (E_*.LOG) und .NET (EC_*.LOG) Fehlerprotokollen mit fortschrittlichen ML-Algorithmen, interaktiven Visualisierungen und intelligenten Investigation-Tools.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Docker](https://img.shields.io/badge/docker-ready-green.svg)
@@ -16,11 +16,12 @@ Eine moderne Webanwendung zur automatisierten Analyse von Visual Objects (E_*.LO
 ### 🎯 **Aufgabe**
 Diese Anwendung automatisiert die Analyse von AMS-Fehlerprotokollen und transformiert unstrukturierte Log-Dateien in aussagekräftige Erkenntnisse durch:
 
-- **Dual-Format-Unterstützung**: Simultane Verarbeitung von Visual Objects und .NET Logs
-- **Intelligente Fehlererkennung**: Automatische Klassifizierung und Kritikalitätsbewertung
-- **Zeitbasierte Analyse**: Erkennung von Fehlermustern und Peak-Zeiten
-- **Benutzer-Aktivitätsanalyse**: Identifikation problematischer Benutzerprofile
-- **Interaktive Dashboards**: Real-time Visualisierungen und Export-Funktionen
+- **🤖 Machine Learning Analytics**: KI-gestützte User Risk Scores, Similar Error Detection und Auto-Kategorisierung
+- **🔍 Root Cause Investigation**: Intelligente Korrelationsanalyse mit 3 Investigation-Modi (Filter, Details, Similar Patterns)
+- **📊 Enhanced Visualizations**: User Risk Heatmap, Timeline Analysis mit ML-Insights und interaktive Dashboards
+- **📄 Complete Log Display**: Vollständige Original Log-Einträge mit Terminal-Design und Download-Funktionen
+- **🎯 Smart Error Detection**: TF-IDF + Cosine Similarity für ähnliche Fehlermuster
+- **⚡ Advanced Filtering**: Globale Filter-Integration mit Root Cause-basierter Automatisierung
 
 ### 🔍 **Erkannte Log-Strukturen**
 ```
@@ -48,6 +49,8 @@ System.AccessViolationException
 | **FastAPI** | Latest | Async REST API Framework |
 | **Pandas** | 2.1.3 | Datenverarbeitung und -analyse |
 | **NumPy** | 1.25.2 | Numerische Berechnungen |
+| **scikit-learn** | 1.3.0 | Machine Learning Algorithmen (TF-IDF, DBSCAN, Clustering) |
+| **scipy** | 1.11.0 | Wissenschaftliche Berechnungen und Statistik |
 | **Redis** | 7-alpine | Caching und Session-Management |
 | **Pydantic** | 2.5.0 | Datenvalidierung und Serialisierung |
 | **python-dateutil** | 2.8.2 | Erweiterte Zeitstempel-Verarbeitung |
@@ -204,11 +207,22 @@ Das Dashboard bietet verschiedene Analysebereiche:
 - **Active Users**: Anzahl betroffener Benutzer
 - **Files Analyzed**: Verarbeitete Dateien
 
+#### **🤖 Machine Learning Features**
+- **👥 User Risk Heatmap**: KI-basierte Risikobewertung mit farbcodierten Benutzerprofilen
+- **🎯 Root Cause Analysis**: ML-gestützte Korrelationsanalyse mit Konfidenz-Scores
+- **🔗 Similar Error Detection**: Automatische Erkennung ähnlicher Fehlermuster mit TF-IDF
+- **📋 Auto-Kategorisierung**: DBSCAN-Clustering für unbekannte Fehlertypen
+
 #### **📈 Visualisierungen** (Interaktiv)
 - **Timeline Analysis**: Erweiterte Zeitbasierte Analyse mit Trendlinie, Wachstumsraten und Filteroptionen
 - **Error Types**: Kreisdiagramm der Fehlercode-Verteilung (klickbar für Filterung)
 - **User Activity**: Balkendiagramm der Benutzer-Aktivitäten
 - **Critical Alerts**: Liste hochpriorisierter Fehler (klickbar für Details)
+
+#### **🔍 Investigation Tools**
+- **Filter Dashboard**: Automatische Filter-Extraktion aus Root Cause Analysen
+- **Detail Modal**: Vollständige Log-Einträge mit Terminal-Design und Download-Option
+- **Similar Patterns**: ML-powered Pattern-Matching mit Ähnlichkeits-Scores
 
 #### **🔍 Detailansicht**
 - **Globale Filterung**: Alle Dashboard-Komponenten reagieren auf aktive Filter
@@ -252,7 +266,7 @@ errlog_analytics/
 │   │   ├── ⚙️  core/            # Konfiguration & Settings
 │   │   ├── 📝 models/           # Pydantic Datenmodelle
 │   │   ├── 🔍 parsers/          # Log-Parser (VO + .NET)
-│   │   ├── 📊 analyzers/        # Datenanalyse-Algorithmen
+│   │   ├── 📊 analyzers/        # Datenanalyse + ML-Algorithmen (MLAnalyzer)
 │   │   ├── ✅ validators/       # Datei-Validierung
 │   │   └── 🛠️  utils/           # Helper-Funktionen
 │   ├── 🧪 tests/               # Backend Tests
@@ -297,6 +311,16 @@ GET    /api/errors/timeline        # Zeitbasierte Daten
 GET    /api/errors/critical        # Kritische Fehler
 GET    /api/errors/users          # Benutzer-Analyse
 GET    /api/errors/frequency      # Häufigkeitsanalyse
+```
+
+#### **🤖 Machine Learning Endpoints**
+```http
+GET    /api/ml/user-risk-scores         # KI-basierte User Risk Bewertung
+GET    /api/ml/similar-errors/{id}      # Ähnliche Fehler via ML-Clustering
+GET    /api/ml/auto-categorize          # DBSCAN Auto-Kategorisierung  
+GET    /api/ml/root-cause-suggestions   # ML Root Cause Korrelationen
+GET    /api/ml/user-risk-heatmap        # Risk Heatmap Visualisierung
+GET    /api/ml/insights-summary         # ML Insights Zusammenfassung
 ```
 
 #### **📋 Utility-Endpoints**
