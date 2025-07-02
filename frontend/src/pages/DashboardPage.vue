@@ -476,6 +476,7 @@ function filterByErrorType(errorType: string) {
   // Toggle filter if clicking the same type
   if (filter.value === errorType) {
     filter.value = ''
+    filteredTableData.value = errorTableData.value // Reset to all data
     $q.notify({
       type: 'info',
       message: 'Filter cleared',
@@ -483,9 +484,13 @@ function filterByErrorType(errorType: string) {
     })
   } else {
     filter.value = errorType
+    // Filter the data by error type
+    filteredTableData.value = errorTableData.value.filter(error => 
+      error.type && error.type.toLowerCase().includes(errorType.toLowerCase())
+    )
     $q.notify({
       type: 'info',
-      message: `Filtering by: ${errorType}`,
+      message: `Filtering by: ${errorType} (${filteredTableData.value.length} results)`,
       timeout: 2000
     })
   }

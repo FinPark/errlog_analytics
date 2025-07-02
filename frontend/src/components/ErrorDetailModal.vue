@@ -191,15 +191,22 @@ ${props.error.content || 'No additional content'}
 
 <style scoped>
 .error-content {
-  background-color: #f5f5f5;
+  background-color: var(--q-color-grey-1);
+  color: var(--q-color-on-surface);
   padding: 12px;
   border-radius: 4px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--q-color-separator);
   font-family: 'Courier New', monospace;
   font-size: 12px;
   white-space: pre-wrap;
   word-wrap: break-word;
   max-height: 300px;
   overflow-y: auto;
+}
+
+body.body--dark .error-content {
+  background-color: var(--q-color-grey-9);
+  color: var(--q-color-grey-3);
+  border-color: var(--q-color-grey-7);
 }
 </style>
