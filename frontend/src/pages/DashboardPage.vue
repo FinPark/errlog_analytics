@@ -185,6 +185,23 @@
       </div>
     </div>
 
+    <!-- Machine Learning Analysis Section -->
+    <div class="row q-gutter-md q-mb-md">
+      <!-- User Risk Heatmap -->
+      <div class="col-12 col-lg-6">
+        <UserRiskHeatmap />
+      </div>
+      
+      <!-- Root Cause Suggestions -->
+      <div class="col-12 col-lg-6">
+        <RootCauseSuggestions 
+          @filter-dashboard="handleRootCauseFilter"
+          @show-root-cause-details="showRootCauseDetails"
+          @find-similar-patterns="findSimilarPatterns"
+        />
+      </div>
+    </div>
+
     <!-- Data Table -->
     <q-card>
       <q-card-section>
@@ -234,7 +251,25 @@
     <!-- Error Detail Modal -->
     <ErrorDetailModal 
       v-model="showErrorModal" 
-      :error="selectedError" 
+      :error="selectedError"
+      @error-selected="handleErrorSelected"
+    />
+
+    <!-- Root Cause Detail Modal -->
+    <RootCauseDetailModal 
+      v-model="showRootCauseModal" 
+      :root-cause="selectedRootCause"
+      :related-errors="getRelatedErrors(selectedRootCause)"
+      @filter-dashboard="handleRootCauseFilter"
+      @error-selected="handleErrorSelected"
+    />
+
+    <!-- Similar Patterns Modal -->
+    <SimilarPatternsModal 
+      v-model="showSimilarPatternsModal" 
+      :root-cause="selectedRootCause"
+      @filter-dashboard="handleRootCauseFilter"
+      @view-pattern="handlePatternView"
     />
   </q-page>
 </template>
@@ -247,6 +282,10 @@ import ErrorDetailModal from '@/components/ErrorDetailModal.vue'
 import ExportMenu from '@/components/ExportMenu.vue'
 import AdvancedFilters from '@/components/AdvancedFilters.vue'
 import TimelineAnalysis from '@/components/TimelineAnalysis.vue'
+import UserRiskHeatmap from '@/components/UserRiskHeatmap.vue'
+import RootCauseSuggestions from '@/components/RootCauseSuggestions.vue'
+import RootCauseDetailModal from '@/components/RootCauseDetailModal.vue'
+import SimilarPatternsModal from '@/components/SimilarPatternsModal.vue'
 import { 
   getErrorSummary, 
   getErrors, 
@@ -273,6 +312,11 @@ let userActivityChartInstance: Chart | null = null
 const loading = ref(false)
 const filter = ref('')
 const dashboardData = ref<any>(null)
+
+// Root cause investigation
+const showRootCauseModal = ref(false)
+const selectedRootCause = ref<any>(null)
+const showSimilarPatternsModal = ref(false)
 
 const summaryStats = ref({
   totalErrors: 0,
@@ -460,6 +504,11 @@ function getSeverityColor(severity: string): string {
 
 // Error detail functions
 function showErrorDetail(error: any) {
+  selectedError.value = error
+  showErrorModal.value = true
+}
+
+function handleErrorSelected(error: any) {
   selectedError.value = error
   showErrorModal.value = true
 }
@@ -708,6 +757,107 @@ function loadDemoData() {
   }
   
   setTimeout(initializeCharts, 100)
+}
+
+// Root cause investigation handlers
+function handleRootCauseFilter(rootCauseFilter: any) {
+  // Apply the filter from root cause to advanced filters
+  advancedFilters.value = {
+    ...advancedFilters.value,
+    users: rootCauseFilter.users || [],
+    severities: rootCauseFilter.severities || [],
+    errorTypes: rootCauseFilter.errorTypes || [],
+    search: rootCauseFilter.search || ''
+  }
+  
+  // If there's a specific time mentioned, add it to search
+  if (rootCauseFilter.specificTime) {
+    advancedFilters.value.search = rootCauseFilter.specificTime
+  }
+  
+  // Trigger filter update
+  let filteredData = errorTableData.value
+  
+  // Apply user filter
+  if (rootCauseFilter.users && rootCauseFilter.users.length > 0) {
+    filteredData = filteredData.filter(error => 
+      rootCauseFilter.users.includes(error.user)
+    )
+  }
+  
+  // Apply severity filter
+  if (rootCauseFilter.severities && rootCauseFilter.severities.length > 0) {
+    filteredData = filteredData.filter(error => 
+      rootCauseFilter.severities.includes(error.severity)
+    )
+  }
+  
+  // Apply error type filter
+  if (rootCauseFilter.errorTypes && rootCauseFilter.errorTypes.length > 0) {
+    filteredData = filteredData.filter(error => 
+      rootCauseFilter.errorTypes.some(type => 
+        error.type && error.type.includes(type)
+      )
+    )
+  }
+  
+  // Apply search filter
+  if (rootCauseFilter.search) {
+    filteredData = filteredData.filter(error => 
+      error.timestamp && error.timestamp.includes(rootCauseFilter.search)
+    )
+  }
+  
+  // Update filtered data
+  handleFilterUpdate(filteredData)
+  
+  $q.notify({
+    type: 'positive',
+    message: `Filter applied: Found ${filteredData.length} related errors`,
+    timeout: 3000
+  })
+}
+
+function showRootCauseDetails(cause: any) {
+  selectedRootCause.value = cause
+  showRootCauseModal.value = true
+}
+
+function findSimilarPatterns(cause: any) {
+  selectedRootCause.value = cause
+  showSimilarPatternsModal.value = true
+}
+
+function getRelatedErrors(rootCause: any) {
+  if (!rootCause || !errorTableData.value) return []
+  
+  // Filter errors related to the root cause
+  return errorTableData.value.filter(error => {
+    // Match based on root cause type and content
+    if (rootCause.type === 'User Pattern') {
+      const userMatch = rootCause.title.match(/^(\w+):/)
+      if (userMatch && error.user === userMatch[1]) return true
+    }
+    
+    if (rootCause.type === 'System Correlation') {
+      const errorTypeMatch = rootCause.description.match(/(DATA TYPE ERROR|ACCESS VIOLATION|BOUND ERROR)/i)
+      if (errorTypeMatch && error.type && error.type.includes(errorTypeMatch[1])) return true
+    }
+    
+    if (rootCause.type === 'Resource Issue') {
+      if (error.severity === 'Critical') return true
+    }
+    
+    return false
+  }).slice(0, 20) // Limit to 20 related errors
+}
+
+function handlePatternView(pattern: any) {
+  $q.notify({
+    type: 'info',
+    message: `Viewing pattern: ${pattern.title}`,
+    timeout: 2000
+  })
 }
 
 onMounted(() => {

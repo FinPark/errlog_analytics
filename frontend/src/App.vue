@@ -14,7 +14,7 @@
           />
           <q-toolbar-title>
             <q-icon name="analytics" class="q-mr-sm" />
-            Error Log Analytics
+            Finkens Error-Log Analytics
           </q-toolbar-title>
           
           <q-space />

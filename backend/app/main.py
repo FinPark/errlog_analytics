@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
 from app.core.config import settings
-from app.api import upload, analyze, errors
+from app.api import upload, analyze, errors, ml
 
 # Create FastAPI application
 app = FastAPI(
@@ -31,6 +31,7 @@ app.add_middleware(
 app.include_router(upload.router, prefix="/api", tags=["upload"])
 app.include_router(analyze.router, prefix="/api", tags=["analyze"])
 app.include_router(errors.router, prefix="/api", tags=["errors"])
+app.include_router(ml.router, tags=["machine-learning"])
 
 @app.get("/")
 async def root():
