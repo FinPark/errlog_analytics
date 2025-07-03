@@ -1,47 +1,55 @@
 <template>
   <q-page class="q-pa-md">
-    <div class="q-mb-md">
-      <div class="text-h4">Upload Error Logs</div>
-      <div class="text-subtitle1 text-grey-7">
-        Upload your AMS error log files for analysis
-      </div>
+    <div class="ams-page-header q-mb-lg">
+      <h1 class="text-h3 text-weight-light text-primary q-mb-sm">Upload Error Logs</h1>
+      <p class="text-body1 text-grey-7 q-mb-none">
+        Import your AMS error log files for comprehensive analysis and insights
+      </p>
     </div>
 
     <!-- Log Type Selection -->
-    <q-card class="q-mb-md">
-      <q-card-section>
-        <div class="text-h6 q-mb-md">Select Log Type</div>
+    <q-card class="ams-card q-mb-lg">
+      <q-card-section class="q-pa-lg">
+        <div class="row items-center q-mb-md">
+          <q-icon name="category" size="24px" color="primary" class="q-mr-sm" />
+          <div class="text-h6">Select Log Type</div>
+        </div>
         <q-option-group
           v-model="selectedLogType"
           :options="logTypeOptions"
           color="primary"
           inline
+          class="ams-option-group"
         />
-        <div class="text-caption text-grey-7 q-mt-sm">
-          Choose the type of error logs you want to analyze
+        <div class="text-body2 text-grey-6 q-mt-md">
+          <q-icon name="info" size="16px" class="q-mr-xs" />
+          Choose the appropriate log format or use auto-detection for automatic recognition
         </div>
       </q-card-section>
     </q-card>
 
     <!-- File Upload Area -->
-    <q-card>
-      <q-card-section>
-        <div class="text-h6 q-mb-md">Upload Files</div>
+    <q-card class="ams-card">
+      <q-card-section class="q-pa-lg">
+        <div class="row items-center q-mb-md">
+          <q-icon name="upload_file" size="24px" color="primary" class="q-mr-sm" />
+          <div class="text-h6">Upload Files</div>
+        </div>
         
         <!-- Drag & Drop Zone -->
         <div
-          class="upload-zone q-pa-xl text-center"
-          :class="{ 'upload-zone--dragover': isDragOver }"
+          class="ams-upload-zone q-pa-xl text-center"
+          :class="{ 'ams-upload-zone--dragover': isDragOver }"
           @dragover.prevent="isDragOver = true"
           @dragleave.prevent="isDragOver = false"
           @drop.prevent="handleDrop"
         >
-          <q-icon name="cloud_upload" size="64px" color="grey-5" />
-          <div class="text-h6 q-mt-md">
+          <q-icon name="cloud_upload" size="72px" color="primary" style="opacity: 0.5;" />
+          <div class="text-h5 text-weight-light q-mt-lg text-grey-8">
             Drag & drop your log files here
           </div>
-          <div class="text-subtitle2 text-grey-7 q-mb-md">
-            or click to select files
+          <div class="text-body1 text-grey-6 q-mb-lg">
+            or browse your computer
           </div>
           
           <q-btn
@@ -414,17 +422,201 @@ function resetUpload() {
 }
 </script>
 
-<style scoped>
-.upload-zone {
-  border: 2px dashed #ccc;
-  border-radius: 8px;
+<style scoped lang="scss">
+// AMS Card Styles
+.ams-card {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
-  cursor: pointer;
+  
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  }
 }
 
-.upload-zone:hover,
-.upload-zone--dragover {
-  border-color: #1976d2;
-  background-color: rgba(25, 118, 210, 0.05);
+// Dark mode cards
+.body--dark {
+  .ams-card {
+    background: #2a2a2a !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    
+    &:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+  }
+  
+  .ams-upload-zone {
+    background: #3a3a3a !important;
+    border-color: #5a5a5a;
+    
+    &:hover {
+      border-color: var(--q-primary);
+      background: rgba(0, 168, 225, 0.1) !important;
+    }
+    
+    &--dragover {
+      border-color: var(--q-primary);
+      background: rgba(0, 168, 225, 0.15) !important;
+    }
+  }
+}
+
+// AMS Upload Zone
+.ams-upload-zone {
+  border: 2px dashed #e0e0e0;
+  border-radius: 12px;
+  background: #fafbfc;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    border-color: var(--q-primary);
+    background: rgba(0, 61, 122, 0.02);
+    
+    .q-icon {
+      transform: translateY(-2px);
+    }
+  }
+  
+  &--dragover {
+    border-color: var(--q-primary);
+    background: rgba(0, 61, 122, 0.05);
+    border-style: solid;
+  }
+}
+
+// AMS Option Group
+.ams-option-group {
+  .q-radio {
+    margin-right: 24px;
+    
+    .q-radio__label {
+      font-weight: 500;
+      font-size: 1rem;
+    }
+  }
+}
+
+// Page Header
+.ams-page-header {
+  max-width: 800px;
+  
+  h1 {
+    margin: 0;
+  }
+  
+  p {
+    line-height: 1.6;
+  }
+}
+
+// File List
+.q-list {
+  .q-item {
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: #f8f9fa;
+    color: #495057 !important;
+    
+    &:hover {
+      background: #f0f2f5;
+    }
+    
+    .q-item__section {
+      color: #495057 !important;
+      
+      .q-item-label {
+        color: #495057 !important;
+        
+        &.caption {
+          color: #6c757d !important;
+        }
+      }
+    }
+    
+    .q-icon {
+      color: #6c757d !important;
+    }
+  }
+}
+
+// Dark mode file list
+.body--dark {
+  .q-list {
+    .q-item {
+      background: #3a3a3a !important;
+      color: #e0e0e0 !important;
+      
+      &:hover {
+        background: #4a4a4a !important;
+      }
+      
+      .q-item__section {
+        color: #e0e0e0 !important;
+        
+        .q-item-label {
+          color: #e0e0e0 !important;
+          
+          &.caption {
+            color: #b0b0b0 !important;
+          }
+        }
+      }
+      
+      .q-icon {
+        color: #b0b0b0 !important;
+      }
+    }
+  }
+}
+
+// Progress Linear
+.q-linear-progress {
+  height: 6px;
+  border-radius: 3px;
+}
+
+// Page Background - Light Mode
+.body--light .q-page {
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+// Page Background - Dark Mode  
+.body--dark .q-page {
+  background: #1a1a1a;
+  min-height: 100vh;
+  
+  .ams-page-header {
+    .text-h3 {
+      color: #ffffff !important;
+    }
+    
+    .text-body1 {
+      color: #b0b0b0 !important;
+    }
+  }
+  
+  .text-h6 {
+    color: #ffffff !important;
+  }
+  
+  .text-body2 {
+    color: #b0b0b0 !important;
+  }
+  
+  .text-h5 {
+    color: #e0e0e0 !important;
+  }
+  
+  .text-body1 {
+    color: #b0b0b0 !important;
+  }
 }
 </style>

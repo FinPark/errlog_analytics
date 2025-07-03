@@ -57,43 +57,91 @@
       />
       
       <!-- Summary Cards -->
-      <div class="row q-gutter-md q-mb-md">
+      <div class="row q-gutter-md q-mb-lg">
         <div class="col-12 col-sm-6 col-md-3">
-          <q-card class="text-center">
-            <q-card-section>
-              <q-icon name="error" size="48px" color="negative" />
-              <div class="text-h4 q-mt-md">{{ filteredSummaryStats.totalErrors }}</div>
-              <div class="text-subtitle2">Total Errors</div>
+          <q-card class="ams-stat-card">
+            <q-card-section class="q-pa-lg">
+              <div class="row items-center">
+                <div class="col">
+                  <div class="text-caption text-grey-7 text-uppercase">Total Errors</div>
+                  <div class="text-h3 text-weight-light q-mt-sm">{{ filteredSummaryStats.totalErrors.toLocaleString() }}</div>
+                  <q-chip size="sm" color="grey-3" text-color="grey-8" class="q-mt-sm">
+                    <q-icon name="trending_up" size="16px" class="q-mr-xs" />
+                    All logged errors
+                  </q-chip>
+                </div>
+                <div class="col-auto">
+                  <div class="ams-icon-box bg-negative">
+                    <q-icon name="error_outline" size="32px" color="white" />
+                  </div>
+                </div>
+              </div>
             </q-card-section>
           </q-card>
         </div>
         
         <div class="col-12 col-sm-6 col-md-3">
-          <q-card class="text-center">
-            <q-card-section>
-              <q-icon name="warning" size="48px" color="orange" />
-              <div class="text-h4 q-mt-md">{{ filteredSummaryStats.criticalErrors }}</div>
-              <div class="text-subtitle2">Critical Errors</div>
+          <q-card class="ams-stat-card">
+            <q-card-section class="q-pa-lg">
+              <div class="row items-center">
+                <div class="col">
+                  <div class="text-caption text-grey-7 text-uppercase">Critical Errors</div>
+                  <div class="text-h3 text-weight-light q-mt-sm">{{ filteredSummaryStats.criticalErrors.toLocaleString() }}</div>
+                  <q-chip size="sm" color="red-1" text-color="red-9" class="q-mt-sm">
+                    <q-icon name="warning" size="16px" class="q-mr-xs" />
+                    High priority
+                  </q-chip>
+                </div>
+                <div class="col-auto">
+                  <div class="ams-icon-box bg-warning">
+                    <q-icon name="warning_amber" size="32px" color="white" />
+                  </div>
+                </div>
+              </div>
             </q-card-section>
           </q-card>
         </div>
         
         <div class="col-12 col-sm-6 col-md-3">
-          <q-card class="text-center">
-            <q-card-section>
-              <q-icon name="person" size="48px" color="info" />
-              <div class="text-h4 q-mt-md">{{ filteredSummaryStats.activeUsers }}</div>
-              <div class="text-subtitle2">Active Users</div>
+          <q-card class="ams-stat-card">
+            <q-card-section class="q-pa-lg">
+              <div class="row items-center">
+                <div class="col">
+                  <div class="text-caption text-grey-7 text-uppercase">Active Users</div>
+                  <div class="text-h3 text-weight-light q-mt-sm">{{ filteredSummaryStats.activeUsers.toLocaleString() }}</div>
+                  <q-chip size="sm" color="blue-1" text-color="blue-9" class="q-mt-sm">
+                    <q-icon name="people" size="16px" class="q-mr-xs" />
+                    Affected users
+                  </q-chip>
+                </div>
+                <div class="col-auto">
+                  <div class="ams-icon-box bg-info">
+                    <q-icon name="group" size="32px" color="white" />
+                  </div>
+                </div>
+              </div>
             </q-card-section>
           </q-card>
         </div>
         
         <div class="col-12 col-sm-6 col-md-3">
-          <q-card class="text-center">
-            <q-card-section>
-              <q-icon name="description" size="48px" color="secondary" />
-              <div class="text-h4 q-mt-md">{{ filteredSummaryStats.filesAnalyzed }}</div>
-              <div class="text-subtitle2">Files Analyzed</div>
+          <q-card class="ams-stat-card">
+            <q-card-section class="q-pa-lg">
+              <div class="row items-center">
+                <div class="col">
+                  <div class="text-caption text-grey-7 text-uppercase">Files Analyzed</div>
+                  <div class="text-h3 text-weight-light q-mt-sm">{{ filteredSummaryStats.filesAnalyzed.toLocaleString() }}</div>
+                  <q-chip size="sm" color="green-1" text-color="green-9" class="q-mt-sm">
+                    <q-icon name="check_circle" size="16px" class="q-mr-xs" />
+                    Processed
+                  </q-chip>
+                </div>
+                <div class="col-auto">
+                  <div class="ams-icon-box bg-positive">
+                    <q-icon name="folder_open" size="32px" color="white" />
+                  </div>
+                </div>
+              </div>
             </q-card-section>
           </q-card>
         </div>
@@ -566,7 +614,7 @@ function initializeCharts() {
         labels: filteredErrorTypes.value.labels,
         datasets: [{
           data: filteredErrorTypes.value.data,
-          backgroundColor: ['#f2c037', '#26a69a', '#c10015', '#9c27b0', '#ff5722']
+          backgroundColor: ['#003d7a', '#0066cc', '#00a8e1', '#4caf50', '#ff9800']
         }]
       },
       options: {
@@ -597,7 +645,7 @@ function initializeCharts() {
         datasets: [{
           label: 'Error Count',
           data: filteredUserActivity.value.data,
-          backgroundColor: '#26a69a'
+          backgroundColor: '#0066cc'
         }]
       },
       options: {
@@ -865,8 +913,110 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .chart-container {
   position: relative;
+}
+
+// AMS Dashboard Card Styles
+.ams-stat-card {
+  border: none;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+  
+  .ams-icon-box {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.9;
+  }
+}
+
+// Chart Cards
+.q-card {
+  border-radius: 12px;
+  border: none;
+  
+  .q-card__section {
+    &:first-child {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+  }
+}
+
+// Table Styling
+.q-table {
+  border-radius: 12px;
+  
+  th {
+    background: #f8f9fa;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: #6c757d;
+  }
+  
+  tbody tr {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: rgba(0, 61, 122, 0.04);
+    }
+  }
+}
+
+// Page Background - Light Mode
+.body--light .q-page {
+  background: #f5f5f5;
+}
+
+// Page Background - Dark Mode
+.body--dark .q-page {
+  background: #1a1a1a;
+  
+  .text-h4, .text-subtitle1 {
+    color: #e0e0e0;
+  }
+  
+  .text-grey-7 {
+    color: #b0b0b0 !important;
+  }
+  
+  // Dark mode card styles
+  .ams-stat-card {
+    background: #2a2a2a !important;
+    color: #e0e0e0;
+    
+    .text-caption {
+      color: #b0b0b0 !important;
+    }
+    
+    .text-h3 {
+      color: #ffffff !important;
+    }
+  }
+  
+  .q-card {
+    background: #2a2a2a !important;
+    color: #e0e0e0;
+    
+    .text-h6 {
+      color: #ffffff !important;
+    }
+    
+    .text-caption {
+      color: #b0b0b0 !important;
+    }
+  }
 }
 </style>
